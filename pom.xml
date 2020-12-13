@@ -10,12 +10,18 @@
     <packaging>jar</packaging>
     <name>long-map</name>
 
+    <properties>
+        <org.apache.maven.plugins>3.3</org.apache.maven.plugins>
+        <org.projectlombok>1.18.16</org.projectlombok>
+        <junit>4.12</junit>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>${org.apache.maven.plugins}</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <source>1.8</source>
@@ -29,8 +35,15 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${org.projectlombok}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
