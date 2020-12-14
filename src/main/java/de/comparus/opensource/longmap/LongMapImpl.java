@@ -30,16 +30,16 @@ public class LongMapImpl<V> implements LongMap<V> {
             threshold *= 2;
             arrayDoubling();
         }
-
-        genericType = (Class<? extends V>) value.getClass();
+        if (null == genericType) {
+            genericType = (Class<? extends V>) value.getClass();
+        }
 
         Node<Long, V> newNode = new Node<>(key, value);
         int index = getBucket(key);
 
-        if (hashTable[index] == null) {
+        if (null == hashTable[index]) {
             return simplePut(index, newNode);
         }
-
         List<Node<Long, V>> nodeList = hashTable[index].getBucket();
 
         for (Node<Long, V> node : nodeList) {
@@ -53,23 +53,27 @@ public class LongMapImpl<V> implements LongMap<V> {
 
     @Override
     public V get(long key) {
+        if (size == 0) {
+            return null;
+        }
+
         int index = getBucket(key);
 
         if (index >= hashTable.length) {
             throw new ArrayIndexOutOfBoundsException();
         }
 
-        if (hashTable[index].getBucket().size() == 1) {
-            return hashTable[index].getBucket().get(0).getValue();
-        }
-
         if (null != hashTable[index]) {
+
+            if (hashTable[index].getBucket().size() == 1) {
+                return hashTable[index].getBucket().get(0).getValue();
+            }
             List<Node<Long, V>> nodes = hashTable[index].getBucket();
 
             return nodes.stream()
                     .filter(node -> key == node.getKey())
-                    .findFirst()
                     .map(Node::getValue)
+                    .findFirst()
                     .orElse(null);
         }
         return null;
@@ -77,9 +81,13 @@ public class LongMapImpl<V> implements LongMap<V> {
 
     @Override
     public V remove(long key) {
+        if (size == 0) {
+            return null;
+        }
+
         int index = getBucket(key);
 
-        if (hashTable[index] == null) {
+        if (null == hashTable[index]) {
             return null;
         }
 
@@ -89,7 +97,6 @@ public class LongMapImpl<V> implements LongMap<V> {
             size--;
             return value;
         }
-
         List<Node<Long, V>> nodes = hashTable[index].getBucket();
 
         for (Node<Long, V> node : nodes) {
@@ -114,20 +121,31 @@ public class LongMapImpl<V> implements LongMap<V> {
 
     @Override
     public boolean containsValue(V value) {
+        if (size == 0) {
+            return false;
+        }
         return Arrays.stream(hashTable)
-                .anyMatch(nodes -> nodes.getBucket().stream()
-                        .anyMatch(node -> node.getValue() == value));
+                .filter(Objects::nonNull)
+                .flatMap(nodes -> nodes.getBucket().stream())
+                .anyMatch(node -> value == node.getValue());
     }
 
     @Override
     public long[] keys() {
+        if (size == 0) {
+            return new long[0];
+        }
         long[] keys = new long[size];
         int i = 0;
 
         for (Node<Long, V> nodes : hashTable) {
-            for (Node<Long, V> node : nodes.getBucket()) {
-                if (null != node) {
-                    keys[i++] = node.getKey();
+            if (null != nodes) {
+                List<Node<Long, V>> bucket = nodes.getBucket();
+
+                for (Node<Long, V> node : bucket) {
+                    if (null != node) {
+                        keys[i++] = node.getKey();
+                    }
                 }
             }
         }
@@ -136,7 +154,12 @@ public class LongMapImpl<V> implements LongMap<V> {
 
     @Override
     public V[] values() {
+        if (size == 0) {
+            return null;
+        }
+
         List<V> values = Arrays.stream(hashTable)
+                .filter(Objects::nonNull)
                 .flatMap(basket -> basket.getBucket().stream())
                 .map(Node::getValue)
                 .collect(Collectors.toList());
@@ -152,6 +175,7 @@ public class LongMapImpl<V> implements LongMap<V> {
     @Override
     public void clear() {
         hashTable = new Node[DEFAULT_INITIAL_CAPACITY];
+        size = 0;
     }
 
     private int getBucket(final Long key) {
@@ -204,44 +228,5 @@ public class LongMapImpl<V> implements LongMap<V> {
             return true;
         }
         return false;
-    }
-
-    public static void main(String[] args) {
-        LongMapImpl<String> ref = new LongMapImpl<>();
-
-        ref.put(1, "1");
-        ref.put(1, "57");
-        ref.put(3, "3");
-        ref.put(4, "4");
-        ref.put(136565777777L, "13");
-        ref.put(5, "5");
-        ref.put(6, "6");
-        ref.put(7, "7");
-        ref.put(8, "8");
-        ref.put(9, "9");
-        ref.put(10, "10");
-        ref.put(11, "11");
-        ref.put(12, "12");
-        ref.put(14, "14");
-        ref.put(15, "15");
-        ref.put(16, "16");
-        ref.put(17, "17");
-        ref.put(67878678887867867L, "7");
-        ref.put(18, "8");//todo col
-        System.out.println(ref.get(18));
-        ref.put(19, "9");
-        ref.put(20, "10");//20
-        ref.put(21, "11");
-        ref.put(22, "12");
-        ref.put(23, "7");
-        ref.put(24, "8");
-        ref.put(25, "9");
-        ref.put(26, "10");
-        ref.put(27, "11");
-        ref.put(28, "12");
-
-        System.out.println(ref.size());
-
-
     }
 }

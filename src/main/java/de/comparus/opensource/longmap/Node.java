@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * List<Pair<K, V>> bucket created for storing objects in case of collision
+ * List<Node<K, V>> bucket created to store objects in the case of a collision
  */
 
 @Data
